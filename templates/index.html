@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LeafGuard AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="bg-scene">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+</div>
+
+<div class="app">
+  <nav class="navbar">
+    <div class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M12 2C6 2 3 8 3 12c0 4 2 8 5 9.5C9 20 12 17 12 17s3 3 4 4.5C19 20 21 16 21 12c0-4-3-10-9-10z" fill="white" opacity="0.9"/>
+          <path d="M12 2v15" stroke="rgba(255,255,255,0.5)" stroke-width="1" stroke-linecap="round"/>
+        </svg>
+      </div>
+      LeafGuard<span style="color:var(--accent-lime)">AI</span>
+    </div>
+    <div class="nav-actions">
+      <span class="nav-tag">CNN · MobileNetV2</span>
+      <a href="/dashboard" class="nav-btn" style="text-decoration: none; font-size: 13px; font-weight: 600; padding: 6px 14px; border-radius: 20px; background: rgba(45,122,58,0.1); color: var(--accent-green); border: 1px solid var(--accent-green); transition: all 0.3s;">📊 Dashboard</a>
+      <button class="theme-btn" id="themeBtn" title="Toggle theme" aria-label="Toggle theme"></button>
+    </div>
+  </nav>
+
+  <!-- Glowing particles background effect -->
+  <div class="particles">
+    <div class="particle" style="top: 20%; left: 10%; animation-delay: 0s;"></div>
+    <div class="particle" style="top: 60%; left: 80%; animation-delay: 2s;"></div>
+    <div class="particle" style="top: 80%; left: 30%; animation-delay: 4s;"></div>
+    <div class="particle" style="top: 30%; left: 70%; animation-delay: 6s;"></div>
+  </div>
+  <style>
+    .particles { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: -1; overflow: hidden; }
+    .particle { position: absolute; width: 6px; height: 6px; background: var(--accent-lime); border-radius: 50%; box-shadow: 0 0 15px 4px var(--accent-lime); opacity: 0; animation: floatParticle 8s ease-in-out infinite; }
+    @keyframes floatParticle { 0% { transform: translateY(0) scale(0.5); opacity: 0; } 50% { transform: translateY(-100px) scale(1.5); opacity: 0.8; } 100% { transform: translateY(-200px) scale(0.5); opacity: 0; } }
+    .nav-btn:hover { background: var(--accent-green) !important; color: white !important; box-shadow: 0 4px 15px rgba(45,122,58,0.4); transform: translateY(-2px); }
+  </style>
+
+  <section class="hero">
+    <div class="hero-badge"><div class="badge-dot"></div>Powered by Deep Learning</div>
+    <h1>Detect Plant<br><span class="accent">Disease Instantly</span></h1>
+    <p>Upload a leaf photo and get AI-powered disease detection with treatment recommendations in seconds.</p>
+  </section>
+
+  <div class="main-grid">
+    <div class="card" style="animation-delay:0.1s">
+      <div class="card-title">
+        <div class="card-title-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-green)" stroke-width="2">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+        </div>
+        Upload Leaf Image
+      </div>
+
+      <div class="upload-zone" id="uploadZone">
+        <input type="file" id="file-input" accept="image/*">
+        <div id="upload-placeholder">
+          <div class="upload-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+              <path d="M12 2C6 2 3 8 3 12c0 4 2 8 5 9.5C9 20 12 17 12 17s3 3 4 4.5C19 20 21 16 21 12c0-4-3-10-9-10z"/>
+            </svg>
+          </div>
+          <div class="upload-text">Drop your leaf photo here</div>
+          <div class="upload-sub">or click to browse files</div>
+        </div>
+        <div id="preview-container" style="display:none">
+          <div class="preview-wrap">
+            <img id="preview-img" src="" alt="Preview">
+            <div class="preview-overlay" onclick="clearImage()"><span>Change Image</span></div>
+          </div>
+        </div>
+      </div>
+
+
+
+      <div class="processing" id="processing">
+        <div class="scan-ring">
+          <div class="scan-inner">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-green)" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+            </svg>
+          </div>
+        </div>
+        <div class="process-steps"><div class="step-dot"></div><div class="step-dot"></div><div class="step-dot"></div></div>
+        <div class="process-label" id="process-label">Preprocessing with OpenCV...</div>
+      </div>
+
+      <button class="analyze-btn" id="analyzeBtn" disabled>
+        <div class="btn-shine"></div>
+        Analyze Leaf Disease
+      </button>
+    </div>
+
+    <div class="card" style="animation-delay:0.2s">
+      <div id="diseases-panel">
+        <div class="card-title">Common Diseases Database</div>
+        <div class="diseases-list">
+          <div class="disease-item"><span class="disease-item-name">Upload an image and click Analyze for real model prediction.</span></div>
+        </div>
+      </div>
+
+      <div class="result-section" id="result-section">
+        <div class="card-title">Analysis Result</div>
+        <div class="disease-header">
+          <div class="disease-sev" id="res-sev">🦠</div>
+          <div>
+            <div class="disease-name" id="res-name">Disease Name</div>
+            <div class="disease-plant" id="res-plant">Detected on: Plant</div>
+          </div>
+        </div>
+
+        <div class="conf-wrap">
+          <div class="conf-label">
+            <span>Confidence Score</span>
+            <span class="conf-pct" id="res-conf">0%</span>
+          </div>
+          <div class="conf-bar-bg"><div class="conf-bar-fill" id="conf-fill"></div></div>
+        </div>
+
+        <div class="info-grid">
+          <div class="info-chip"><div class="info-chip-label">Severity</div><div class="info-chip-val" id="res-severity">-</div></div>
+          <div class="info-chip"><div class="info-chip-label">Model</div><div class="info-chip-val" id="res-model">MobileNetV2</div></div>
+          <div class="info-chip"><div class="info-chip-label">Processing</div><div class="info-chip-val" id="res-processing">OpenCV + CNN</div></div>
+          <div class="info-chip"><div class="info-chip-label">Dataset</div><div class="info-chip-val" id="res-dataset">PlantVillage</div></div>
+        </div>
+
+        <div class="section-head">Symptoms Detected</div>
+        <div class="symptom-list" id="symptoms-list"></div>
+
+        <div class="section-head">Treatment Protocol</div>
+        <div class="treatment-steps" id="treatment-list"></div>
+
+        <hr class="divider">
+        <button class="analyze-btn" onclick="resetResult()" style="margin-top:0">
+          <div class="btn-shine"></div>
+          Analyze Another Leaf
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const theme = document.documentElement;
+let isDark = false;
+let selectedFile = null;
+document.getElementById('themeBtn').addEventListener('click', () => {
+  isDark = !isDark;
+  theme.setAttribute('data-theme', isDark ? 'dark' : '');
+});
+
+const uploadZone = document.getElementById('uploadZone');
+const fileInput = document.getElementById('file-input');
+const analyzeBtn = document.getElementById('analyzeBtn');
+const previewContainer = document.getElementById('preview-container');
+const uploadPlaceholder = document.getElementById('upload-placeholder');
+const previewImg = document.getElementById('preview-img');
+
+uploadZone.addEventListener('click', e => {
+  if (!e.target.closest('#preview-container')) fileInput.click();
+});
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragging'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragging'));
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault();
+  uploadZone.classList.remove('dragging');
+  const f = e.dataTransfer.files[0];
+  if (f && f.type.startsWith('image/')) loadImage(f);
+});
+fileInput.addEventListener('change', () => {
+  if (fileInput.files[0]) loadImage(fileInput.files[0]);
+});
+
+function loadImage(file) {
+  selectedFile = file;
+  const reader = new FileReader();
+  reader.onload = e => {
+    previewImg.src = e.target.result;
+    uploadPlaceholder.style.display = 'none';
+    previewContainer.style.display = 'block';
+    analyzeBtn.disabled = false;
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearImage() {
+  selectedFile = null;
+  fileInput.value = '';
+  previewImg.src = '';
+  previewContainer.style.display = 'none';
+  uploadPlaceholder.style.display = 'block';
+  analyzeBtn.disabled = true;
+}
+
+async function loadSample(url, filename) {
+  try {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    const file = new File([blob], filename, { type: blob.type });
+    loadImage(file);
+  } catch (error) {
+    console.error("Failed to load sample image", error);
+  }
+}
+
+const processLabels = [
+  'Preprocessing with OpenCV...',
+  'Segmenting leaf from background...',
+  'Running through MobileNetV2...',
+  'Computing confidence scores...',
+  'Generating treatment report...'
+];
+
+async function runAnalysis() {
+  if (!selectedFile) return;
+  const proc = document.getElementById('processing');
+  const lbl = document.getElementById('process-label');
+  analyzeBtn.style.display = 'none';
+  proc.classList.add('active');
+
+  let i = 0;
+  const iv = setInterval(() => {
+    lbl.textContent = processLabels[i % processLabels.length];
+    i += 1;
+  }, 500);
+
+  try {
+    const formData = new FormData();
+    formData.append('leaf_image', selectedFile);
+    const res = await fetch('/predict', { method: 'POST', body: formData });
+    const data = await res.json();
+    if (!res.ok) {
+      alert(data.error || 'Prediction failed.');
+      return;
+    }
+    showResult(data);
+  } catch (err) {
+    alert('Server error while predicting.');
+  } finally {
+    clearInterval(iv);
+    proc.classList.remove('active');
+    analyzeBtn.style.display = 'block';
+  }
+}
+
+analyzeBtn.addEventListener('click', runAnalysis);
+
+function showResult(data) {
+  document.getElementById('diseases-panel').style.display = 'none';
+  const rs = document.getElementById('result-section');
+  rs.classList.add('active');
+
+  const sevMap = { high:'🔴', med:'🟡', low:'🟢' };
+  const sevEl = document.getElementById('res-sev');
+  sevEl.textContent = sevMap[data.severity_class] || '🟡';
+  sevEl.className = 'disease-sev sev-' + (data.severity_class || 'med');
+
+  document.getElementById('res-name').textContent = data.disease_name;
+  document.getElementById('res-plant').textContent = 'Detected on: ' + data.plant_name;
+  document.getElementById('res-conf').textContent = data.confidence + '%';
+  document.getElementById('res-severity').textContent = data.severity;
+  document.getElementById('res-model').textContent = data.model;
+  document.getElementById('res-processing').textContent = data.processing;
+  document.getElementById('res-dataset').textContent = data.dataset;
+
+  setTimeout(() => {
+    document.getElementById('conf-fill').style.width = data.confidence + '%';
+  }, 80);
+
+  const sympEl = document.getElementById('symptoms-list');
+  sympEl.innerHTML = (data.symptoms || []).map(s => `<span class="symptom-tag">${s}</span>`).join('');
+
+  const treatEl = document.getElementById('treatment-list');
+  treatEl.innerHTML = (data.treatment || []).map((t,i) =>
+    `<div class="treatment-step"><div class="step-num">${i+1}</div><div class="step-text">${t}</div></div>`
+  ).join('');
+}
+
+function resetResult() {
+  document.getElementById('result-section').classList.remove('active');
+  document.getElementById('diseases-panel').style.display = 'block';
+  document.getElementById('conf-fill').style.width = '0';
+  clearImage();
+  analyzeBtn.style.display = 'block';
+  document.getElementById('processing').classList.remove('active');
+}
+</script>
+</body>
+</html>
