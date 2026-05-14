@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, jsonify, render_template, request, send_from_directory
 from werkzeug.utils import secure_filename
 
 from config import CLASS_NAMES, SYMPTOM_MAP, TREATMENT_MAP
@@ -46,6 +46,11 @@ def dashboard():
     predictions = prediction_logger.get_all_predictions()
     stats = prediction_logger.get_stats()
     return render_template("dashboard.html", predictions=predictions, stats=stats)
+
+
+@app.route("/uploads/<filename>")
+def uploaded_file(filename):
+    return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
 
 
 @app.route("/predict", methods=["POST"])

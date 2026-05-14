@@ -70,13 +70,13 @@
     </div>
     <div class="stat-card">
       <div class="stat-value" style="font-size: 36px; color: var(--accent-lime);">
-        {% set healthy_count = 0 %}
+        {% set ns = namespace(healthy_count=0) %}
         {% for d in stats.top_diseases %}
           {% if 'healthy' in d[0].lower() %}
-            {% set healthy_count = d[1] %}
+            {% set ns.healthy_count = d[1] %}
           {% endif %}
         {% endfor %}
-        {{ (healthy_count / stats.total_predictions * 100)|round(1) if stats.total_predictions > 0 else 0 }}%
+        {{ (ns.healthy_count / stats.total_predictions * 100)|round(1) if stats.total_predictions > 0 else 0 }}%
       </div>
       <div class="stat-label">Healthy Plant Rate</div>
     </div>
@@ -124,8 +124,9 @@
           <td style="color: var(--text-muted); font-size: 13px;">{{ log.created_at }}</td>
           <td>
             <div style="display: flex; align-items: center; gap: 10px;">
-              <div style="width: 40px; height: 40px; border-radius: 8px; background: url('{{ url_for('static', filename='../uploads/' + log.image_name) }}') center/cover; border: 1px solid var(--border);"></div>
+              <div style="width: 40px; height: 40px; border-radius: 8px; background: url('{{ url_for('uploaded_file', filename=log.image_name) }}') center/cover; border: 1px solid var(--border);"></div>
               <span style="font-size: 12px; color: var(--text-muted);">{{ log.image_name[:15] }}...</span>
+
             </div>
           </td>
           <td style="font-weight: 500;">{{ plant }}</td>
