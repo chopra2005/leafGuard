@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LeafGuard AI</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
@@ -26,8 +26,9 @@
       LeafGuard<span style="color:var(--accent-lime)">AI</span>
     </div>
     <div class="nav-actions">
-      <span class="nav-tag">CNN · MobileNetV2</span>
+      <span class="nav-tag">CNN · EfficientNetB0</span>
       <a href="/dashboard" class="nav-btn" style="text-decoration: none; font-size: 13px; font-weight: 600; padding: 6px 14px; border-radius: 20px; background: rgba(45,122,58,0.1); color: var(--accent-green); border: 1px solid var(--accent-green); transition: all 0.3s;">📊 Dashboard</a>
+      <a href="/logout" class="nav-btn" style="text-decoration: none; font-size: 13px; font-weight: 600; padding: 6px 14px; border-radius: 20px; background: rgba(201,64,64,0.1); color: var(--accent-red); border: 1px solid var(--accent-red); transition: all 0.3s;">Logout</a>
       <button class="theme-btn" id="themeBtn" title="Toggle theme" aria-label="Toggle theme"></button>
     </div>
   </nav>
@@ -104,7 +105,7 @@
 
     <div class="card" style="animation-delay:0.2s">
       <div id="diseases-panel">
-        <div class="card-title">Common Diseases Database</div>
+        <div class="card-title">Ready for Analysis</div>
         <div class="diseases-list">
           <div class="disease-item"><span class="disease-item-name">Upload an image and click Analyze for real model prediction.</span></div>
         </div>
@@ -130,7 +131,7 @@
 
         <div class="info-grid">
           <div class="info-chip"><div class="info-chip-label">Severity</div><div class="info-chip-val" id="res-severity">-</div></div>
-          <div class="info-chip"><div class="info-chip-label">Model</div><div class="info-chip-val" id="res-model">MobileNetV2</div></div>
+          <div class="info-chip"><div class="info-chip-label">Model</div><div class="info-chip-val" id="res-model">EfficientNetB0</div></div>
           <div class="info-chip"><div class="info-chip-label">Processing</div><div class="info-chip-val" id="res-processing">OpenCV + CNN</div></div>
           <div class="info-chip"><div class="info-chip-label">Dataset</div><div class="info-chip-val" id="res-dataset">PlantVillage</div></div>
         </div>
@@ -153,11 +154,18 @@
 
 <script>
 const theme = document.documentElement;
-let isDark = false;
 let selectedFile = null;
+let savedTheme = localStorage.getItem('theme');
+let isDark = savedTheme !== 'light';
+
+if (!isDark) {
+  theme.setAttribute('data-theme', '');
+}
+
 document.getElementById('themeBtn').addEventListener('click', () => {
   isDark = !isDark;
   theme.setAttribute('data-theme', isDark ? 'dark' : '');
+  localStorage.setItem('theme', isDark ? 'dark' : 'light');
 });
 
 const uploadZone = document.getElementById('uploadZone');
@@ -217,7 +225,7 @@ async function loadSample(url, filename) {
 const processLabels = [
   'Preprocessing with OpenCV...',
   'Segmenting leaf from background...',
-  'Running through MobileNetV2...',
+  'Running through EfficientNetB0...',
   'Computing confidence scores...',
   'Generating treatment report...'
 ];

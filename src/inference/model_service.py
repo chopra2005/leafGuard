@@ -21,7 +21,7 @@ class PlantDiseaseModelService:
         self.treatment_map = treatment_map
 
     def predict(self, preprocessed_rgb: np.ndarray) -> PredictionResult:
-        image = preprocessed_rgb.astype("float32") / 255.0
+        image = preprocessed_rgb.astype("float32")
         batch = np.expand_dims(image, axis=0)
         probs = self.model.predict(batch, verbose=0)[0]
 

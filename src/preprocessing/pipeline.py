@@ -10,6 +10,7 @@ import numpy as np
 @dataclass
 class PreprocessConfig:
     target_size: tuple[int, int] = (224, 224)
+    use_leaf_segmentation: bool = False
     denoise_h: int = 10
     denoise_template_window_size: int = 7
     denoise_search_window_size: int = 21
@@ -23,6 +24,9 @@ class LeafPreprocessor:
 
     def preprocess(self, image_bgr: np.ndarray) -> np.ndarray:
         resized = cv2.resize(image_bgr, self.config.target_size, interpolation=cv2.INTER_AREA)
+
+        if not self.config.use_leaf_segmentation:
+            return cv2.cvtColor(resized, cv2.COLOR_BGR2RGB)
 
         denoised = cv2.fastNlMeansDenoisingColored(
             resized,

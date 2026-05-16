@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login - LeafGuard AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<style>
+  .auth-container { max-width: 400px; margin: 100px auto; padding: 40px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; box-shadow: var(--shadow-card); position: relative; z-index: 1; }
+  .auth-title { font-family: 'Inter', sans-serif; font-size: 28px; font-weight: 800; text-align: center; margin-bottom: 30px; color: var(--text-primary); }
+  .auth-form { display: flex; flex-direction: column; gap: 20px; }
+  .form-group { display: flex; flex-direction: column; gap: 8px; }
+  .form-group label { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
+  .form-group input { padding: 14px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-primary); color: var(--text-primary); font-family: 'Inter', sans-serif; font-size: 15px; }
+  .form-group input:focus { outline: none; border-color: var(--accent-green); }
+  .auth-btn { padding: 15px; border: none; border-radius: 12px; cursor: pointer; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 15px; background: linear-gradient(135deg, var(--accent-green), var(--accent-lime)); color: white; transition: opacity 0.2s; }
+  .auth-btn:hover { opacity: 0.9; }
+  .auth-footer { text-align: center; margin-top: 24px; font-size: 14px; color: var(--text-secondary); }
+  .auth-footer a { color: var(--accent-green); text-decoration: none; font-weight: 600; }
+  .error-msg { background: rgba(201,64,64,0.1); color: var(--accent-red); padding: 12px; border-radius: 8px; font-size: 13px; text-align: center; margin-bottom: 20px; }
+</style>
+</head>
+<body>
+<div class="bg-scene"><div class="orb orb-1"></div><div class="orb orb-2"></div></div>
+<div class="app">
+  <nav class="navbar">
+    <div class="logo">
+      <div class="logo-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2C6 2 3 8 3 12c0 4 2 8 5 9.5C9 20 12 17 12 17s3 3 4 4.5C19 20 21 16 21 12c0-4-3-10-9-10z" fill="white" opacity="0.9"/><path d="M12 2v15" stroke="rgba(255,255,255,0.5)" stroke-width="1" stroke-linecap="round"/></svg></div>
+      LeafGuard<span style="color:var(--accent-lime)">AI</span>
+    </div>
+  </nav>
+  
+  <div class="auth-container">
+    <div class="auth-title">Welcome Back</div>
+    {% if error %}
+    <div class="error-msg">{{ error }}</div>
+    {% endif %}
+    <form class="auth-form" method="POST" action="/login">
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" name="username" required placeholder="Enter username">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" name="password" required placeholder="Enter password">
+      </div>
+      <button type="submit" class="auth-btn">Login</button>
+    </form>
+    <div class="auth-footer">
+      Don't have an account? <a href="/signup">Sign up</a>
+    </div>
+  </div>
+</div>
+<script>
+let savedTheme = localStorage.getItem('theme');
+if (savedTheme === 'light') document.documentElement.setAttribute('data-theme', '');
+</script>
+</body>
+</html>

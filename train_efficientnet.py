@@ -13,19 +13,22 @@ DATA_ROOT = PROJECT_ROOT / "plantvillage dataset"
 MODELS_DIR = PROJECT_ROOT / "models"
 MODELS_DIR.mkdir(parents=True, exist_ok=True)
 
-MODEL_PATH = MODELS_DIR / "plant_disease_mobilenetv2.keras"
+MODEL_PATH = MODELS_DIR / "plant_disease_efficientnetb0.keras"
 CLASS_NAMES_PATH = MODELS_DIR / "class_names.json"
 
 # Always train on the original PlantVillage color images (not segmented/grayscale).
 DATA_SUBDIR = "color"
 
 # If True, apply the same OpenCV pipeline as the Flask app on each color image.
-# If False, only TensorFlow resize + normalize (still uses original color images).
-USE_OPENCV_PREPROCESSING = True
+# It is disabled by default because OpenCV inside tf.data is much slower for training.
+USE_OPENCV_PREPROCESSING = False
 
 IMG_SIZE = (224, 224)
 BATCH_SIZE = 32
 SEED = 42
+MAX_IMAGES_PER_CLASS = 500
+INITIAL_EPOCHS = 3
+FINE_TUNE_EPOCHS = 2
 
 
 def main() -> None:
@@ -42,10 +45,21 @@ def main() -> None:
     labels: list[int] = []
     for class_idx, class_name in enumerate(class_names):
         class_dir = train_root / class_name
+        class_files: list[str] = []
         for ext in exts:
             for fp in class_dir.glob(ext):
-                filepaths.append(str(fp))
-                labels.append(class_idx)
+                class_files.append(str(fp))
+        rng = np.random.default_rng(SEED + class_idx)
+        class_files = sorted(class_files)
+        if MAX_IMAGES_PER_CLASS and len(class_files) > MAX_IMAGES_PER_CLASS:
+            class_files = sorted(rng.choice(class_files, size=MAX_IMAGES_PER_CLASS, replace=False).tolist())
+        for fp in class_files:
+            filepaths.append(fp)
+            labels.append(class_idx)
+
+    print(f"Training EfficientNetB0 on {len(filepaths)} images across {num_classes} classes.")
+    if MAX_IMAGES_PER_CLASS:
+        print(f"Using up to {MAX_IMAGES_PER_CLASS} images per class for this run.")
 
     filepaths_np = np.array(filepaths)
     labels_np = np.array(labels)
@@ -72,7 +86,7 @@ def main() -> None:
         def cv2_preprocess_rgb(img_rgb_uint8: np.ndarray) -> np.ndarray:
             img_bgr = cv2.cvtColor(img_rgb_uint8, cv2.COLOR_RGB2BGR)
             out_rgb_uint8 = preprocessor.preprocess(img_bgr)
-            return out_rgb_uint8.astype(np.float32) / 255.0
+            return out_rgb_uint8.astype(np.float32)
 
         def load_and_preprocess(path: tf.Tensor, label: tf.Tensor) -> tuple[tf.Tensor, tf.Tensor]:
             img_bytes = tf.io.read_file(path)
@@ -88,7 +102,7 @@ def main() -> None:
             img_bytes = tf.io.read_file(path)
             img = tf.image.decode_image(img_bytes, channels=3, expand_animations=False)
             img = tf.image.resize(img, IMG_SIZE)
-            img = tf.image.convert_image_dtype(img, tf.float32)
+            img = tf.cast(img, tf.float32)
             return img, tf.cast(label, tf.int32)
 
     aug = tf.keras.Sequential(
@@ -112,7 +126,7 @@ def main() -> None:
     ds_val = make_ds(val_files, val_labels, training=False)
     ds_test = make_ds(test_files, test_labels, training=False)
 
-    base_model = tf.keras.applications.MobileNetV2(
+    base_model = tf.keras.applications.EfficientNetB0(
         input_shape=(IMG_SIZE[0], IMG_SIZE[1], 3),
         include_top=False,
         weights="imagenet",
@@ -137,7 +151,7 @@ def main() -> None:
         tf.keras.callbacks.ReduceLROnPlateau(monitor="val_accuracy", factor=0.5, patience=2),
     ]
 
-    model.fit(ds_train, validation_data=ds_val, epochs=8, callbacks=callbacks)
+    model.fit(ds_train, validation_data=ds_val, epochs=INITIAL_EPOCHS, callbacks=callbacks)
 
     base_model.trainable = True
     for layer in base_model.layers[:-50]:
@@ -148,7 +162,7 @@ def main() -> None:
         loss=tf.keras.losses.SparseCategoricalCrossentropy(),
         metrics=["accuracy"],
     )
-    model.fit(ds_train, validation_data=ds_val, epochs=6, callbacks=callbacks)
+    model.fit(ds_train, validation_data=ds_val, epochs=FINE_TUNE_EPOCHS, callbacks=callbacks)
 
     test_loss, test_acc = model.evaluate(ds_test)
     print(f"Test accuracy: {test_acc * 100:.2f}%")
