@@ -52,7 +52,7 @@ The project is ready for a Python web service such as Render.
 4. Use these settings:
    - Runtime: Python
    - Build command: `pip install -r requirements.txt`
-   - Start command: `gunicorn wsgi:app --bind 0.0.0.0:$PORT`
+   - Start command: `gunicorn wsgi:app --bind 0.0.0.0:$PORT --timeout 180`
    - Python version: `3.11.9`
 5. Add an environment variable:
    - `FLASK_SECRET_KEY`: any long random value
