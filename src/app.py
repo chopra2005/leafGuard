@@ -49,11 +49,6 @@ def _is_allowed(filename: str) -> bool:
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-@app.route("/health")
-def health():
-    return jsonify({"status": "ok", "model_loaded": model_service is not None})
-
-
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if "user_id" in session:

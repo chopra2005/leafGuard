@@ -42,23 +42,6 @@ python src/app.py
 3. Open browser at:
 - `http://127.0.0.1:5000`
 
-## Deploy
-
-The project is ready for a Python web service such as Render.
-
-1. Make sure `models/plant_disease_efficientnetb0.keras` and `models/class_names.json` are committed with the project.
-2. Push the project to GitHub.
-3. Create a new Render Web Service from the GitHub repository.
-4. Use these settings:
-   - Runtime: Python
-   - Build command: `pip install -r requirements.txt`
-   - Start command: `gunicorn wsgi:app --bind 0.0.0.0:$PORT --timeout 180`
-   - Python version: `3.11.9`
-5. Add an environment variable:
-   - `FLASK_SECRET_KEY`: any long random value
-
-The included `render.yaml`, `Procfile`, `runtime.txt`, and `wsgi.py` provide the same deployment settings.
-
 ## Notes
 
 - Update `src/config.py` with all class names from your trained model.

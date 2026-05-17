@@ -1,7 +1,6 @@
 __pycache__/
+models/
 plantvillage dataset/
 uploads/
 predictions.db
 *.pyc
-.venv/
-outputs/
